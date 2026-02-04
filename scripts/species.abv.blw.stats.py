@@ -1,206 +1,186 @@
 import pandas as pd
 import numpy as np
+
 from scipy import stats
 
-# -----------------------------
-# USER SETTINGS
-# -----------------------------
-DATA_PATH = "/workspaces/glcyn.species.analysis/data/spp.cover.sites.top25.csv"
-GROUP_COL = "ab"  # sorting variable with values "above"/"below"
-OUT_CSV = "/workspaces/glcyn.species.analysis/data/last35_above_below_mean_tests.csv"
+# ---------------------------
+# CONFIG
+# ---------------------------
+INPUT_CSV = "/workspaces/glcyn.species.analysis/data/species.cover.site.csv"
+OUTPUT_CSV = "ab_group_comparison_last36.csv"
 
-ALPHA = 0.05
+GROUP_COL = "ab"          # grouping variable
+ABOVE_LABEL = "above"     # value in ab column for "above"
+BELOW_LABEL = "below"     # value in ab column for "below"
 
-# -----------------------------
-# HELPERS
-# -----------------------------
-def normality_pvalue(x: np.ndarray):
+ALPHA_NORMALITY = 0.05    # threshold for normality decision
+# ---------------------------
+
+
+def coerce_numeric(series: pd.Series) -> pd.Series:
+    """Convert to numeric, forcing non-numeric to NaN."""
+    return pd.to_numeric(series, errors="coerce")
+
+
+def normality_test_p(x: np.ndarray) -> float:
     """
-    Returns (test_name, pvalue) for a normality test on x.
-    Strategy:
-      - If n < 3: not enough data
-      - If 3 <= n <= 5000: Shapiro-Wilk (recommended range)
-      - If n > 5000: D’Agostino-Pearson (normaltest) if n>=8, else fallback
+    Return a p-value for normality test.
+    - If n < 3: not enough data -> NaN
+    - If 3 <= n <= 5000: Shapiro-Wilk (common choice)
+    - If n > 5000: D’Agostino-Pearson normaltest (SciPy recommends Shapiro not for huge n)
     """
     x = np.asarray(x, dtype=float)
-    x = x[np.isfinite(x)]
+    x = x[~np.isnan(x)]
     n = x.size
 
     if n < 3:
-        return ("normality_not_enough_data", np.nan)
+        return np.nan
 
     if n <= 5000:
+        # Shapiro-Wilk
         try:
-            p = stats.shapiro(x).pvalue
-            return ("shapiro", float(p))
+            return float(stats.shapiro(x).pvalue)
         except Exception:
-            return ("shapiro_failed", np.nan)
-
-    # n > 5000
-    if n >= 8:
-        try:
-            p = stats.normaltest(x).pvalue
-            return ("dagostino_pearson", float(p))
-        except Exception:
-            return ("normaltest_failed", np.nan)
-
-    return ("normality_not_enough_data", np.nan)
-
-def benjamini_hochberg(pvals):
-    """BH-FDR adjusted p-values in original order (NaNs preserved)."""
-    p = np.asarray(pvals, dtype=float)
-    out = np.full_like(p, np.nan, dtype=float)
-
-    mask = np.isfinite(p)
-    pv = p[mask]
-    n = pv.size
-    if n == 0:
-        return out
-
-    order = np.argsort(pv)
-    ranked = pv[order]
-    adj = np.empty(n, dtype=float)
-
-    prev = 1.0
-    for i in range(n - 1, -1, -1):
-        rank = i + 1
-        val = ranked[i] * n / rank
-        prev = min(prev, val)
-        adj[i] = prev
-
-    adj = np.clip(adj, 0, 1)
-    tmp = np.empty(n, dtype=float)
-    tmp[order] = adj
-    out[mask] = tmp
-    return out
-
-# -----------------------------
-# LOAD + CLEAN
-# -----------------------------
-df = pd.read_csv(DATA_PATH)
-
-# Standardize group labels
-df[GROUP_COL] = df[GROUP_COL].astype(str).str.strip().str.lower()
-
-# Keep only "above"/"below"
-df = df[df[GROUP_COL].isin(["above", "below"])].copy()
-
-# Identify the last 35 columns
-last35_cols = list(df.columns[-35:])
-
-# Coerce last 35 to numeric where possible
-for c in last35_cols:
-    df[c] = pd.to_numeric(df[c], errors="coerce")
-
-above_df = df[df[GROUP_COL] == "above"]
-below_df = df[df[GROUP_COL] == "below"]
-
-print(f"Loaded: {DATA_PATH}")
-print(f"Rows total (above/below only): {len(df):,}")
-print(f"Rows above: {len(above_df):,} | below: {len(below_df):,}")
-print(f"Analyzing last 35 columns: {last35_cols[0]} ... {last35_cols[-1]}\n")
-
-# -----------------------------
-# ANALYZE EACH COLUMN
-# -----------------------------
-results = []
-pvals = []
-
-for col in last35_cols:
-    x = above_df[col].to_numpy(dtype=float)
-    y = below_df[col].to_numpy(dtype=float)
-    x = x[np.isfinite(x)]
-    y = y[np.isfinite(y)]
-
-    n_above, n_below = x.size, y.size
-
-    mean_above = float(np.mean(x)) if n_above > 0 else np.nan
-    mean_below = float(np.mean(y)) if n_below > 0 else np.nan
-    diff = mean_above - mean_below if np.isfinite(mean_above) and np.isfinite(mean_below) else np.nan
-
-    # Normality tests per group
-    norm_test_a, norm_p_a = normality_pvalue(x)
-    norm_test_b, norm_p_b = normality_pvalue(y)
-
-    # Decide test
-    # Rule:
-    #   - If both groups appear normal (p >= alpha) AND both have n>=2 -> Welch t-test
-    #   - Else -> Mann–Whitney U (nonparametric, compares distributions; often used for median shift)
-    test_used = None
-    stat = np.nan
-    pval = np.nan
-
-    enough_for_t = (n_above >= 2 and n_below >= 2)
-    enough_for_u = (n_above >= 1 and n_below >= 1)
-
-    both_normal = (np.isfinite(norm_p_a) and np.isfinite(norm_p_b) and (norm_p_a >= ALPHA) and (norm_p_b >= ALPHA))
-
-    if enough_for_t and both_normal:
-        # Welch's t-test (robust to unequal variances)
-        test_used = "welch_ttest"
-        tt = stats.ttest_ind(x, y, equal_var=False, nan_policy="omit")
-        stat = float(tt.statistic)
-        pval = float(tt.pvalue)
-    elif enough_for_u:
-        # Mann–Whitney U (two-sided)
-        # Note: requires at least 1 observation per group
-        test_used = "mann_whitney_u"
-        try:
-            mu = stats.mannwhitneyu(x, y, alternative="two-sided")
-            stat = float(mu.statistic)
-            pval = float(mu.pvalue)
-        except Exception:
-            test_used = "mann_whitney_u_failed"
-            stat = np.nan
-            pval = np.nan
+            return np.nan
     else:
-        test_used = "not_enough_data"
+        # normaltest requires n >= 8
+        if n < 8:
+            return np.nan
+        try:
+            return float(stats.normaltest(x).pvalue)
+        except Exception:
+            return np.nan
 
-    results.append({
-        "column": col,
-        "n_above": int(n_above),
-        "mean_above": mean_above,
-        "n_below": int(n_below),
-        "mean_below": mean_below,
-        "mean_diff_above_minus_below": diff,
-        "normality_test_above": norm_test_a,
-        "normality_p_above": norm_p_a,
-        "normality_test_below": norm_test_b,
-        "normality_p_below": norm_p_b,
-        "test_used": test_used,
-        "test_statistic": stat,
-        "p_value": pval,
-    })
-    pvals.append(pval)
 
-res = pd.DataFrame(results)
+def pick_variable_columns(df: pd.DataFrame) -> list[str]:
+    """
+    Prefer selecting columns from ACENIG..VULOCT (inclusive) if present and the slice is 36 cols.
+    Otherwise fall back to the last 36 columns.
+    """
+    cols = list(df.columns)
 
-# Multiple-testing adjustment across 35 columns (BH-FDR)
-res["p_value_bh_fdr"] = benjamini_hochberg(res["p_value"].values)
+    if "ACENIG" in cols and "VULOCT" in cols:
+        i0 = cols.index("ACENIG")
+        i1 = cols.index("VULOCT")
+        if i0 <= i1:
+            slice_cols = cols[i0 : i1 + 1]
+            if len(slice_cols) == 36:
+                return slice_cols
 
-# Sort for printing
-res_print = res.sort_values(["p_value", "column"], na_position="last")
+    # fallback: last 36 columns
+    return cols[-36:]
 
-# -----------------------------
-# PRINT RESULTS
-# -----------------------------
-print("=== Above vs Below: mean comparisons for last 35 columns ===")
-with pd.option_context("display.max_rows", 200, "display.width", 180):
-    print(
-        res_print[[
-            "column",
-            "n_above", "mean_above",
-            "n_below", "mean_below",
-            "mean_diff_above_minus_below",
-            "normality_test_above", "normality_p_above",
-            "normality_test_below", "normality_p_below",
-            "test_used", "test_statistic",
-            "p_value", "p_value_bh_fdr"
-        ]].to_string(index=False)
-    )
 
-# -----------------------------
-# WRITE CSV
-# -----------------------------
-res.to_csv(OUT_CSV, index=False)
-print(f"\nWrote results CSV to: {OUT_CSV}")
+def main():
+    df = pd.read_csv(INPUT_CSV)
+
+    if GROUP_COL not in df.columns:
+        raise ValueError(f"Grouping column '{GROUP_COL}' not found in the dataset.")
+
+    var_cols = pick_variable_columns(df)
+
+    # Make sure we don't accidentally include the grouping column
+    var_cols = [c for c in var_cols if c != GROUP_COL]
+
+    # Subset by groups (case-insensitive safety)
+    ab_series = df[GROUP_COL].astype(str).str.strip().str.lower()
+    above_mask = ab_series == str(ABOVE_LABEL).lower()
+    below_mask = ab_series == str(BELOW_LABEL).lower()
+
+    if above_mask.sum() == 0 or below_mask.sum() == 0:
+        raise ValueError(
+            f"Could not find rows for both groups. Counts -> "
+            f"{ABOVE_LABEL}: {above_mask.sum()}, {BELOW_LABEL}: {below_mask.sum()}"
+        )
+
+    results = []
+
+    print("\n=== Group comparison: 'above' vs 'below' for selected 36 variables ===\n")
+
+    for col in var_cols:
+        x_above = coerce_numeric(df.loc[above_mask, col]).to_numpy()
+        x_below = coerce_numeric(df.loc[below_mask, col]).to_numpy()
+
+        # Drop NaNs for analysis
+        xa = x_above[~np.isnan(x_above)]
+        xb = x_below[~np.isnan(x_below)]
+
+        n_above = xa.size
+        n_below = xb.size
+
+        mean_above = float(np.nanmean(xa)) if n_above > 0 else np.nan
+        mean_below = float(np.nanmean(xb)) if n_below > 0 else np.nan
+
+        # Normality p-values (per group)
+        pnorm_above = normality_test_p(xa)
+        pnorm_below = normality_test_p(xb)
+
+        above_normal = (not np.isnan(pnorm_above)) and (pnorm_above > ALPHA_NORMALITY)
+        below_normal = (not np.isnan(pnorm_below)) and (pnorm_below > ALPHA_NORMALITY)
+
+        # Choose test
+        test_name = None
+        stat = np.nan
+        pval = np.nan
+
+        # Need enough data to test
+        if n_above >= 2 and n_below >= 2:
+            if above_normal and below_normal:
+                # Use Welch's t-test (robust to unequal variances)
+                test_name = "Welch_ttest"
+                t = stats.ttest_ind(xa, xb, equal_var=False, nan_policy="omit")
+                stat = float(t.statistic)
+                pval = float(t.pvalue)
+            else:
+                # Nonparametric Mann-Whitney U
+                # Use two-sided; works for independent samples
+                test_name = "MannWhitneyU"
+                try:
+                    u = stats.mannwhitneyu(xa, xb, alternative="two-sided")
+                    stat = float(u.statistic)
+                    pval = float(u.pvalue)
+                except ValueError:
+                    # e.g., all values identical can sometimes cause issues in older SciPy
+                    test_name = "MannWhitneyU_failed"
+                    stat = np.nan
+                    pval = np.nan
+        else:
+            test_name = "Insufficient_n"
+
+        diff = mean_above - mean_below if (not np.isnan(mean_above) and not np.isnan(mean_below)) else np.nan
+
+        results.append(
+            {
+                "variable": col,
+                "n_above": n_above,
+                "n_below": n_below,
+                "mean_above": mean_above,
+                "mean_below": mean_below,
+                "mean_diff_above_minus_below": diff,
+                "normality_p_above": pnorm_above,
+                "normality_p_below": pnorm_below,
+                "test_used": test_name,
+                "test_statistic": stat,
+                "p_value": pval,
+                "alpha_normality": ALPHA_NORMALITY,
+            }
+        )
+
+        # Print a compact line to the command window
+        print(
+            f"{col:>10} | nA={n_above:4d} meanA={mean_above: .6g} | "
+            f"nB={n_below:4d} meanB={mean_below: .6g} | "
+            f"diff={diff: .6g} | "
+            f"pNorm(A)={pnorm_above if not np.isnan(pnorm_above) else np.nan: .3g} "
+            f"pNorm(B)={pnorm_below if not np.isnan(pnorm_below) else np.nan: .3g} | "
+            f"{test_name} p={pval if not np.isnan(pval) else np.nan: .3g}"
+        )
+
+    out = pd.DataFrame(results)
+    out.to_csv(OUTPUT_CSV, index=False)
+
+    print(f"\nSaved results to: {OUTPUT_CSV}\n")
+
+
+if __name__ == "__main__":
+    main()

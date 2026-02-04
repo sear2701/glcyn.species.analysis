@@ -5,19 +5,19 @@ import matplotlib.pyplot as plt
 # -----------------------------
 # Load data
 # -----------------------------
-path = "/workspaces/glcyn.species.analysis/data/species.cover.csv"
+path = "/workspaces/glcyn.species.analysis/data/species.cover.site.csv"
 df = pd.read_csv(path)
 
 # Variables (12 panels, in order)
 vars_12 = [
-    "brotec", "brorub", "polmon", "phraus",
-    "sacrav", "saltra", "bacsalf", "bacsaln",
-    "salexi", "tamram", "salgoo", "popfre"
+    "BROTEC", "BRORUB", "POLMON", "PHRAUS",
+    "SACRAV", "SALTRA", "BACSALF", "BACSALN",
+    "SALEXI", "TAMRAM", "SALGOO", "POPFRE"
 ]
 
 # Optional: nicer panel titles (edit as you like)
 titles = [
-    "Bromus tectorum", "Bromus rubens", "Polypogon monospeliensis", "Phragmites australis",
+    "Bromus tectorum", "Bromus madritensis", "Polypogon monospeliensis", "Phragmites australis",
     "Saccharum ravennae", "Salsola tragus", "Baccharis salicifolia", "Baccharis salicina",
     "Salix exigua", "Tamarix ramosissma", "Salix gooddingii", "Populus fremontii"
 ]
