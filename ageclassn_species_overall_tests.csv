@@ -1,13 +1,13 @@
 variable,test_used,statistic,p_value,levene_p,normality_note,min_group_n,q_value_BH_FDR_overall
-brotec,Kruskal-Wallis,27.560031086129978,0.00026413046890262865,0.032681016762098766,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.0010565218756105146
-brorub,Kruskal-Wallis,12.715295041280449,0.07935658312840405,0.3608832844294115,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.1587131662568081
-polmon,Kruskal-Wallis,38.046641290921414,2.9689296936734955e-06,0.008044027167381092,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,3.562715632408195e-05
-phraus,Kruskal-Wallis,11.604719879209606,0.1143303293584241,0.8444909992979519,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.18406355520741915
-sacrav,Kruskal-Wallis,5.9704404481906534,0.5432050973506368,0.9721582909148121,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.5432050973506368
-saltra,Kruskal-Wallis,28.738766922857625,0.00016144562502869124,0.0009798644004977413,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.0009686737501721475
-bacsalf,Kruskal-Wallis,9.756524516925532,0.20279596736113195,0.1648444318842332,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.2703946231481759
-bacsaln,Kruskal-Wallis,8.485338197383143,0.2917461657313741,0.30931390551538507,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.3385110620361698
-salexi,Kruskal-Wallis,11.384384179294406,0.1227090368049461,2.2433683697532783e-05,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.18406355520741915
-salgoo,Kruskal-Wallis,8.259105339105313,0.310301806866489,0.16620486446100857,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.3385110620361698
-tamram,Kruskal-Wallis,14.480997947000267,0.04325854946545329,0.9132206833328,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.10382051871708789
-popfre,Kruskal-Wallis,24.366862575102083,0.0009819078468572117,0.0033560907103309862,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",2,0.002945723540571635
+BROTEC,Kruskal-Wallis,25.107253232115863,0.0007262831177448038,0.044059863543285505,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.0021788493532344114
+BRORUB,Kruskal-Wallis,13.415650430269267,0.06260585641567704,0.06469366821182265,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.10732432528401777
+POLMON,Kruskal-Wallis,40.81930182142353,8.768973069210793e-07,0.0004898156882712725,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,1.0522767683052952e-05
+PHRAUS,Kruskal-Wallis,11.567163711482205,0.11572180216853326,0.7673789683753054,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.1705622209161366
+SACRAV,Kruskal-Wallis,5.364852283075016,0.6155312549392957,0.9448431034759485,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.6155312549392957
+SALTRA,Kruskal-Wallis,29.55436289252254,0.00011459730809522273,0.001147849758577659,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.0006875838485713364
+BACSALF,Kruskal-Wallis,11.253885587885131,0.12792166568710245,0.010994324923007132,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.1705622209161366
+BACSALN,Kruskal-Wallis,8.158214432660298,0.31884979361762555,0.38940924222584855,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.38261975234115064
+SALEXI,Kruskal-Wallis,14.761819168332405,0.03917666218126352,1.5998842982803907e-05,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.07835332436252704
+SALGOO,Kruskal-Wallis,6.04157231324942,0.5349036454160427,0.1168064742156297,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.5835312495447739
+TAMRAM,Kruskal-Wallis,17.507289336273367,0.014402241777847416,0.8867615219420875,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.0345653802668338
+POPFRE,Kruskal-Wallis,25.23753027283478,0.0006886187593200735,0.013302638627557952,"Non-normal group(s), unequal variance, or insufficient n for Shapiro → nonparametric",5,0.0021788493532344114

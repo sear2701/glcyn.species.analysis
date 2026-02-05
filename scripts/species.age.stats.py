@@ -10,7 +10,7 @@ from statsmodels.stats.multitest import multipletests
 # ----------------------------
 # Load data
 # ----------------------------
-path = "/workspaces/glcyn.species.analysis/data/species.cover.csv"
+path = "/workspaces/glcyn.species.analysis/data/species.cover.site.csv"
 df = pd.read_csv(path)
 
 # Use ageclassn as the grouping variable; also create a string/categorical version
@@ -21,8 +21,8 @@ df["ageclassn_cat"] = df["ageclassn"].astype(str)
 
 # Variables to test
 variables = [
-    "brotec", "brorub", "polmon", "phraus", "sacrav", "saltra",
-    "bacsalf", "bacsaln", "salexi", "salgoo", "tamram", "popfre"
+    "BROTEC", "BRORUB", "POLMON", "PHRAUS", "SACRAV", "SALTRA",
+    "BACSALF", "BACSALN", "SALEXI", "SALGOO", "TAMRAM", "POPFRE"
 ]
 
 # ----------------------------
