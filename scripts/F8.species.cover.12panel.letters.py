@@ -17,7 +17,7 @@ vars_12 = [
 
 # Optional: nicer panel titles (edit as you like)
 titles = [
-    "Bromus tectorum", "Bromus madritensis", "Polypogon monospeliensis", "Phragmites australis",
+    "Bromus tectorum", "Bromus rubens", "Polypogon monospeliensis", "Phragmites australis",
     "Saccharum ravennae", "Salsola tragus", "Baccharis salicifolia", "Baccharis salicina",
     "Salix exigua", "Tamarix ramosissma", "Salix gooddingii", "Populus fremontii"
 ]
@@ -175,7 +175,7 @@ for i, var in enumerate(vars_12):
         **line_kw
     )
 
-    ax.set_title(titles[i], fontsize=11, fontweight="bold", pad=4)
+    ax.set_title(titles[i], fontsize=13, fontweight="bold", pad=4)
 
     # Add significance labels for selected panels
     if var in sig:
@@ -199,14 +199,14 @@ for i, var in enumerate(vars_12):
 
 # Axis labels: left side + bottom row
 for r in range(4):
-    axes[r, 0].set_ylabel("Cover (%)")
+    axes[r, 0].set_ylabel("Cover (%)", fontsize=14)
 
 for c in range(3):
-    axes[3, c].set_xlabel("Landscape age")
+    axes[3, c].set_xlabel("Landscape age", fontsize=14)
 
 plt.tight_layout()
 
-out = "F7_Species_Ageclass_12Panel.png"
+out = "F8_Species_Ageclass_12Panel.png"
 plt.savefig(out, dpi=300, bbox_inches="tight")
 print(f"Saved figure to: {out}")
 
