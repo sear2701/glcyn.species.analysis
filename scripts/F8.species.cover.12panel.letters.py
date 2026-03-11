@@ -17,9 +17,12 @@ vars_12 = [
 
 # Optional: nicer panel titles (edit as you like)
 titles = [
-    "Bromus tectorum", "Bromus rubens", "Polypogon monospeliensis", "Phragmites australis",
-    "Saccharum ravennae", "Salsola tragus", "Baccharis salicifolia", "Baccharis salicina",
-    "Salix exigua", "Tamarix ramosissma", "Salix gooddingii", "Populus fremontii"
+    "$\it{Bromus\ tectorum}$\ncheatgrass", "$\it{Bromus\ rubens}$\ncompact brome", 
+    "$\it{Polypogon\ monospeliensis}$\nbearded rabbitsfoot grass", "$\it{Phragmites\ australis}$\ncommon reed",
+    "$\it{Saccharum\ ravennae}$\nravenna grass", "$\it{Salsola\ tragus}$\ntumbleweed", 
+    "$\it{Baccharis\ salicifolia}$\nseepwillow", "$\it{Baccharis\ salicina}$\nwillow baccharis",
+    "$\it{Salix\ exigua}$\ncoyote willow", "$\it{Tamarix\ ramosissma}$\ntamarisk", 
+    "$\it{Salix\ gooddingii}$\nGooding's willow", "$\it{Populus\ fremontii}$\nFremont cottonwood"
 ]
 
 # -----------------------------
@@ -175,7 +178,9 @@ for i, var in enumerate(vars_12):
         **line_kw
     )
 
-    ax.set_title(titles[i], fontsize=13, fontweight="bold", pad=4)
+    ax.set_title(titles[i], fontsize=13, fontweight="bold",pad=4)  
+    ax.set_xticks(x)
+    ax.set_xticklabels(["1", "2", "4", "6", "12", "25", "40", ">50"])
 
     # Add significance labels for selected panels
     if var in sig:
