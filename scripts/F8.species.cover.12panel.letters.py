@@ -22,7 +22,7 @@ titles = [
     "$\it{Saccharum\ ravennae}$\nravenna grass", "$\it{Salsola\ tragus}$\ntumbleweed", 
     "$\it{Baccharis\ salicifolia}$\nseepwillow", "$\it{Baccharis\ salicina}$\nwillow baccharis",
     "$\it{Salix\ exigua}$\ncoyote willow", "$\it{Tamarix\ ramosissma}$\ntamarisk", 
-    "$\it{Salix\ gooddingii}$\nGooding's willow", "$\it{Populus\ fremontii}$\nFremont cottonwood"
+    "$\it{Salix\ gooddingii}$\nGoodding's willow", "$\it{Populus\ fremontii}$\nFremont cottonwood"
 ]
 
 # -----------------------------
