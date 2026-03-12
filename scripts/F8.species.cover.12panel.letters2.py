@@ -8,11 +8,18 @@ import matplotlib.pyplot as plt
 path = "/workspaces/glcyn.species.analysis/data/species.cover.site.csv"
 df = pd.read_csv(path)
 
+# Variables (12 panels, in order)
+vars_12 = [
+    "BROTEC", "BRORUB", "POLMON", "PHRAUS",
+    "SACRAV", "SALTRA", "BACSALF", "BACSALN",
+    "SALEXI", "TAMRAM", "SALGOO", "POPFRE"
+]
+
 # -----------------------------
-# Create CSV of mean cover for each species at each ageclassn
+# Create CSV of mean cover for selected species at each ageclassn
 # -----------------------------
 species_cover_means = (
-    df.groupby("ageclassn")["TAMRAM", "POPFRE", "SALEXI", "BACSALN", "BACSALF"]
+    df.groupby("ageclassn")[["TAMRAM", "POPFRE", "SALEXI", "BACSALN", "BACSALF"]]
       .mean()
       .reset_index()
       .sort_values("ageclassn")
@@ -24,17 +31,12 @@ species_cover_means.to_csv(output_csv, index=False)
 print(species_cover_means)
 print(f"Saved CSV to: {output_csv}")
 
-# Variables (12 panels, in order)
-vars_12 = [
-    "BROTEC", "BRORUB", "POLMON", "PHRAUS",
-    "SACRAV", "SALTRA", "BACSALF", "BACSALN",
-    "SALEXI", "TAMRAM", "SALGOO", "POPFRE"
-]
-
 # Optional: nicer panel titles (edit as you like)
 titles = [
     "$\it{Bromus\ tectorum}$\ncheatgrass", "$\it{Bromus\ rubens}$\ncompact brome", 
-    "$\it{Polypogon\ monospeliensis}$\nbearded rabbitsfoot grass", "$\it{Phragmites\ australis}$\ncommon reed",
+    "$\it{Polypogon\ monospeliensis}$\nbearded rabbitsfoot grass", 
+    "$\\bf{Bearded\\ rabbitsfoot\\ grass}$\n$\\it{Polypogon\\ monospeliensis}$"
+    "$\it{Phragmites\ australis}$\ncommon reed",
     "$\it{Saccharum\ ravennae}$\nravenna grass", "$\it{Salsola\ tragus}$\ntumbleweed", 
     "$\it{Baccharis\ salicifolia}$\nseepwillow", "$\it{Baccharis\ salicina}$\nwillow baccharis",
     "$\it{Salix\ exigua}$\ncoyote willow", "$\it{Tamarix\ ramosissma}$\ntamarisk", 
@@ -101,7 +103,6 @@ def add_label_at_errorbar(ax, x_arr, y_arr, yerr_arr, x_value, text,
 
 # -----------------------------
 # Significance label specification
-# keys: var -> list of (ageclassn, text, where)
 # -----------------------------
 sig = {
     "BROTEC": [
@@ -177,9 +178,8 @@ fig, axes = plt.subplots(
     sharey=True
 )
 
-# Styling similar to example
 line_kw = dict(color="black", linewidth=1.5, marker="o", markersize=5)
-err_kw = dict(capsize=0)  # no caps
+err_kw = dict(capsize=0)
 
 # Plot each panel
 for i, var in enumerate(vars_12):
@@ -194,16 +194,12 @@ for i, var in enumerate(vars_12):
         **line_kw
     )
 
-    ax.set_title(titles[i], fontsize=13, fontweight="bold",pad=4)  
+    ax.set_title(titles[i], fontsize=13, fontweight="bold", pad=4)
     ax.set_xticks(x)
     ax.set_xticklabels(["1", "2", "4", "6", "12", "25", "40", ">50"])
 
-    # Add significance labels for selected panels
     if var in sig:
-        # Ensure we have stable ylim before placing labels (important w/ shared axes)
-        # (sharedy=True means ylim will converge; using current is fine here)
         for (age, txt, where) in sig[var]:
-            # If an ageclassn isn't present in the data, skip silently
             if age not in x:
                 continue
             add_label_at_errorbar(
@@ -214,11 +210,10 @@ for i, var in enumerate(vars_12):
                 x_value=age,
                 text=txt,
                 where=where,
-                fontsize=8,      # smaller font so labels don't overlap
-                ypad_frac=0.03   # a bit of padding beyond the error bar
+                fontsize=8,
+                ypad_frac=0.03
             )
 
-# Axis labels: left side + bottom row
 for r in range(4):
     axes[r, 0].set_ylabel("Cover (%)", fontsize=14)
 
